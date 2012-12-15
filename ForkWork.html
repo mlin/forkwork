@@ -1,0 +1,251 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<link rel="stylesheet" href="style.css" type="text/css">
+<meta content="text/html; charset=iso-8859-1" http-equiv="Content-Type">
+<link rel="Start" href="index.html">
+<link rel="Up" href="index.html">
+<link title="Index of types" rel=Appendix href="index_types.html">
+<link title="Index of exceptions" rel=Appendix href="index_exceptions.html">
+<link title="Index of values" rel=Appendix href="index_values.html">
+<link title="Index of modules" rel=Appendix href="index_modules.html">
+<link title="ForkWork" rel="Chapter" href="ForkWork.html"><link title="High-level interface" rel="Section" href="#2_Highlevelinterface">
+<link title="Lower-level interface " rel="Section" href="#2_Lowerlevelinterface">
+<link title="General restrictions" rel="Section" href="#2_Generalrestrictions">
+<title>ForkWork</title>
+</head>
+<body>
+<div class="navbar">&nbsp;<a class="up" href="index.html" title="Index">Up</a>
+&nbsp;</div>
+<h1>Module <a href="type_ForkWork.html">ForkWork</a></h1>
+<pre><span class="keyword">module</span> ForkWork: <code class="code">sig</code> <a href="ForkWork.html">..</a> <code class="code">end</code></pre><div class="info">
+Fork child processes to perform work on multiple cores.
+<p>
+
+ForkWork is intended for workloads that a master process can partition into
+independent jobs, each of which will typically take a while to execute
+(several seconds, or more). Also, the resulting values should not be too
+massive, since they must be marshalled for transmission back to the master
+process.<br>
+</div>
+<hr width="100%">
+<pre><span id="VALncores"><span class="keyword">val</span> ncores</span> : <code class="type">unit -> int</code></pre><div class="info">
+Get the number of processors believed to be available. The library
+attempts to detect this at program startup (currently only works on Linux),
+and if that fails it defaults to 4.<br>
+</div>
+<pre><span id="VALset_ncores"><span class="keyword">val</span> set_ncores</span> : <code class="type">?detect:bool -> int -> unit</code></pre><div class="info">
+Override the number of processors believed to be available.<br>
+</div>
+<div class="param_info"><code class="code">detect</code> : if set to true, attempt to detect the number of processors, and
+if that fails then use the provided value.</div>
+<br>
+<h2 id="2_Highlevelinterface">High-level interface</h2>
+<p>
+
+These map functions suffice for many use cases.<br>
+<pre><span id="VALmap_list"><span class="keyword">val</span> map_list</span> : <code class="type">?maxprocs:int -> ?fail_fast:bool -> ('a -> 'b) -> 'a list -> 'b list</code></pre><pre><span id="VALmap_array"><span class="keyword">val</span> map_array</span> : <code class="type">?maxprocs:int -> ?fail_fast:bool -> ('a -> 'b) -> 'a array -> 'b array</code></pre><div class="info">
+Map a list or array, forking one child process per item to map. In
+general, the result type <code class="code">'b</code> should not include anything that's difficult to
+marshal, including functions, exceptions, weak arrays, or custom values from C
+bindings.
+<p>
+
+If a child process ends with an exception, the master process waits for any
+other running child processes to exit, and then raises an exception to the
+caller. However, the exception raised to the caller may not be the same one
+raised in the child process (see below). If multiple child processes end with
+exceptions, it is undefined which one the caller learns about. Once any
+exception is detected, no new child processes will be forked.<br>
+</div>
+<div class="param_info"><code class="code">maxprocs</code> : maximum number of child processes to run at any one time
+(default <code class="code">ncores ()</code>). ForkWork takes care of keeping <code class="code">maxprocs</code> child
+processes running at steady-state, even if their individual runtimes vary.</div>
+<div class="param_info"><code class="code">fail_fast</code> : if set to true, then as soon as any child process ends with
+an exception, SIGTERM is sent to all other child processes, and the exception
+is raised to the caller once they all exit.</div>
+<pre><span id="EXCEPTIONChildExn"><span class="keyword">exception</span> ChildExn</span> <span class="keyword">of</span> <code class="type">string list</code></pre>
+<div class="info">
+Due to limitations of OCaml's marshalling capabilities, communication of
+exceptions from a child process to the master process is tightly restricted:
+<p>
+<ul>
+<li>If the child process raises <code class="code">ForkWork.ChildExn lst</code>, the same exception is
+  re-raised in the master process. You can put any information you want into
+  the string list, including marshalled values.</li>
+</ul>
+<ul>
+<li>If the child process ends with any other exception <code class="code">exn</code>, the master process
+  sees either <code class="code">ForkWork.ChildExn ["_"; Printexc.to_string exn]</code> or
+  <code class="code">ForkWork.ChildExn ["_"; Printexc.to_string exn; Printexc.get_backtrace ()]</code>,
+  depending on the status of <code class="code">Printexc.backtrace_status ()</code>.</li>
+</ul>
+<ul>
+<li>It follows that if you're raising <code class="code">ChildExn</code> with information to be
+  interpreted by the master process, you probably should not put the string
+  <code class="code">"_"</code> as the first element of the list.</li>
+</ul>
+
+Another, more type-safe option is to encode errors in the result type instead
+of raising an exception. The disadvantage of this is that ForkWork would still
+proceed with running all the remaining map operations.<br>
+<b>See also</b> <a href=" http://caml.inria.fr/mantis/view.php?id=1961 ">Mantis: 0001961 (exception marshalling)</a><br>
+</div>
+<br>
+<h2 id="2_Lowerlevelinterface">Lower-level interface </h2> 
+<p>
+
+The lower-level interface provides much more control over child process
+scheduling and result retrieval. For example, the master process does not have
+to be blocked while child processes are running, and the result of any
+individual child process can be retrieved as soon as it finishes.
+<p>
+
+<b>Types</b><br>
+<pre><span id="TYPEmgr"><span class="keyword">type</span> <code class="type">'a</code> mgr</span> </pre>
+<div class="info">
+The type of a ForkWork manager for a particular result type<br>
+</div>
+
+<pre><span id="TYPEresult"><span class="keyword">type</span> <code class="type">'a</code> result</span> = <code class="type">[ `Exn of string list | `OK of 'a ]</code> </pre>
+<div class="info">
+A child process can either complete successfully with a result or end with
+an exception, as described above.<br>
+</div>
+
+<pre><span id="TYPEjob"><span class="keyword">type</span> <code class="type"></code>job</span> </pre>
+<div class="info">
+An abstract value representing a forked child process<br>
+</div>
+
+<br>
+<b>Forking child processes</b><br>
+<pre><span id="VALmanager"><span class="keyword">val</span> manager</span> : <code class="type">?maxprocs:int -> unit -> 'a <a href="ForkWork.html#TYPEmgr">mgr</a></code></pre><div class="info">
+Create a job manager.<br>
+</div>
+<div class="param_info"><code class="code">maxprocs</code> : the maximum number of child processes the manager will permit
+at any one time (default <code class="code">ncores ()</code>)</div>
+<pre><span id="VALfork"><span class="keyword">val</span> fork</span> : <code class="type">?prepare:(unit -> unit) -><br>       ?nonblocking:bool -> 'a <a href="ForkWork.html#TYPEmgr">mgr</a> -> ('b -> 'a) -> 'b -> <a href="ForkWork.html#TYPEjob">job</a></code></pre><div class="info">
+<code class="code">ForkWork.fork mgr f x</code> forks a child process to compute <code class="code">(f x)</code>. If the
+manager already has <code class="code">maxprocs</code> outstanding jobs, then by default <code class="code">fork</code> blocks
+until one of them exits.<br>
+</div>
+<div class="param_info"><code class="code">prepare</code> : actions to be performed immediately before invoking
+<code class="code">Unix.fork</code>. The default actions are to flush stdout and stderr, and
+<code class="code">Gc.full_major ()</code>.</div>
+<div class="param_info"><code class="code">nonblocking</code> : if set to <code class="code">true</code> and there are already <code class="code">maxprocs</code>
+outstanding jobs, <code class="code">fork</code> raises <code class="code">Busy</code> instead of blocking. The low-level
+interface doesn't provide a way to "enqueue" an arbitrary number of jobs, but
+it's straightforward to layer such logic on top.</div>
+<pre><span id="EXCEPTIONBusy"><span class="keyword">exception</span> Busy</span></pre>
+<div class="info">
+raised by <code class="code">fork</code> iff <code class="code">~nonblocking:true</code> and the manager already has
+    <code class="code">maxprocs</code> outstanding child processes<br>
+</div>
+<br>
+<b>Retrieving results</b><br>
+<pre><span id="VALresult"><span class="keyword">val</span> result</span> : <code class="type">?keep:bool -> 'a <a href="ForkWork.html#TYPEmgr">mgr</a> -> <a href="ForkWork.html#TYPEjob">job</a> -> 'a <a href="ForkWork.html#TYPEresult">result</a> option</code></pre><div class="info">
+Non-blocking query for the result of a job. By default, if a result is
+returned, then it is also removed from the job manager's memory, such that
+future calls with the same job would raise <code class="code">Not_found</code>.<br>
+<b>Raises</b> <code>Not_found</code> if the job is not known to the manager<br>
+<b>Returns</b> <code class="code">None</code> if the job is still running. There are no side effects in
+this case.<br>
+</div>
+<div class="param_info"><code class="code">keep</code> : setting to true keeps the result in the job manager's memory, so
+that it can be retrieved again. The result cannot be garbage-collected unless
+it is later removed.</div>
+<pre><span id="VALany_result"><span class="keyword">val</span> any_result</span> : <code class="type">?keep:bool -> 'a <a href="ForkWork.html#TYPEmgr">mgr</a> -> (<a href="ForkWork.html#TYPEjob">job</a> * 'a <a href="ForkWork.html#TYPEresult">result</a>) option</code></pre><div class="info">
+Non-blocking query for any available result.
+<p>
+
+Repeated calls to <code class="code">any_result</code> with <code class="code">~keep:true</code> may return the same result.<br>
+</div>
+<pre><span id="VALawait_result"><span class="keyword">val</span> await_result</span> : <code class="type">?keep:bool -> 'a <a href="ForkWork.html#TYPEmgr">mgr</a> -> <a href="ForkWork.html#TYPEjob">job</a> -> 'a <a href="ForkWork.html#TYPEresult">result</a></code></pre><div class="info">
+Get the result of the job, blocking the caller until it's available.<br>
+</div>
+<pre><span id="VALawait_any_result"><span class="keyword">val</span> await_any_result</span> : <code class="type">?keep:bool -> 'a <a href="ForkWork.html#TYPEmgr">mgr</a> -> <a href="ForkWork.html#TYPEjob">job</a> * 'a <a href="ForkWork.html#TYPEresult">result</a></code></pre><div class="info">
+Get the result of any job, blocking the caller until one is available.
+<p>
+
+Repeated calls to <code class="code">await_any_result</code> with <code class="code">~keep:true</code> may return the same
+result.<br>
+<b>Raises</b> <code>Idle</code> if no results are available and there are no outstanding jobs<br>
+</div>
+<pre><span id="EXCEPTIONIdle"><span class="keyword">exception</span> Idle</span></pre>
+<div class="info">
+raised by <code class="code">await_any_result</code> iff no results are available and there are no
+outstanding jobs<br>
+</div>
+<pre><span id="VALawait_all"><span class="keyword">val</span> await_all</span> : <code class="type">'a <a href="ForkWork.html#TYPEmgr">mgr</a> -> unit</code></pre><div class="info">
+Block the caller until all outstanding jobs are done. The results of the
+jobs are still stored in the manager's memory, and can be retrieved as above.<br>
+</div>
+<pre><span id="VALignore_results"><span class="keyword">val</span> ignore_results</span> : <code class="type">'a <a href="ForkWork.html#TYPEmgr">mgr</a> -> unit</code></pre><div class="info">
+Convenience function for child processes launched just for side-effects:
+for each result <em>currently available</em> in the job manager's memory, remove it
+therefrom; and if it's an exception result, raise <code class="code">ChildExn</code>. The result
+values are lost! This function never blocks; results from any still-running
+child processes remain pending.<br>
+</div>
+<pre><span id="EXCEPTIONIPC_Failure"><span class="keyword">exception</span> IPC_Failure</span> <span class="keyword">of</span> <code class="type"><a href="ForkWork.html#TYPEjob">job</a> * exn</code></pre>
+<div class="info">
+Any of the result retrieval functions might raise <code class="code">IPC_Failure</code> if an
+exception occurs while trying to receive a result from a child process. This
+is a severe internal error, and it's probably reasonable to clean up and abort
+the entire program if it occurs. Possible causes include:
+<p>
+<ul>
+<li>Child process segfaults or is killed</li>
+<li>System out of memory</li>
+<li>System out of disk space</li>
+<li>Corruption of certain temp files</li>
+</ul>
+<br>
+</div>
+<br>
+<b>Killing jobs</b><br>
+<pre><span id="VALkill"><span class="keyword">val</span> kill</span> : <code class="type">?wait:bool -> 'a <a href="ForkWork.html#TYPEmgr">mgr</a> -> <a href="ForkWork.html#TYPEjob">job</a> -> unit</code></pre><div class="info">
+Kill a job. The job is removed from the manager's memory and the child
+process is sent SIGTERM if it's still running.<br>
+</div>
+<div class="param_info"><code class="code">wait</code> : if set to true, wait for the child process to exit before
+returning.</div>
+<pre><span id="VALkill_all"><span class="keyword">val</span> kill_all</span> : <code class="type">?wait:bool -> 'a <a href="ForkWork.html#TYPEmgr">mgr</a> -> unit</code></pre><div class="info">
+Kill all outstanding jobs, and also remove all results from the job
+manager's memory. This effectively resets the job manager.<br>
+</div>
+<br>
+<h2 id="2_Generalrestrictions">General restrictions</h2>
+<p>
+
+The master process <b>SHOULD NOT</b>:<ul>
+<li>fork a new child process while multiple threads exist</li>
+<li>call ForkWork functions concurrently from multiple threads. Excepting the
+  previous point, calling ForkWork functions from multiple threads is OK if
+  protected by a single mutex for all job managers.</li>
+<li>use <code class="code">Sys.command</code>, <code class="code">Unix.fork</code>, <code class="code">Unix.wait</code>, or <code class="code">Unix.waitpid</code> from multiple
+  threads at any time. Using them in a single-threaded program is possible
+  with the following restriction: if you <code class="code">fork</code> your own child processes and
+  subsequently <code class="code">wait</code>/<code class="code">waitpid</code> for them, you should not interleave any
+  ForkWork functions in between those two steps. (<code class="code">Sys.command</code> always
+  satisfies this restriction in a single-threaded program.)</li>
+<li>allow a ForkWork manager to be garbage-collected while it still has child
+  processes running</li>
+</ul>
+
+Child processes <b>SHOULD NOT</b>:<ul>
+<li>use <code class="code">Unix.fork</code> or <code class="code">Unix.exec*</code> independently of each other (fork-exec and
+  <code class="code">Sys.command</code> are OK)</li>
+<li>use any ForkWork-related state adopted from the master process</li>
+<li>do anything you typically can't do from a forked child process, e.g. mutate
+  global state and expect it to be reflected in the parent process</li>
+<li>neglect to do any of the typical chores that may be required
+  of a forked child process, e.g. closing sockets that were open in the master
+  at the fork point (if they need to be closed promptly)</li>
+</ul>
+
+Lastly, there's a pedantic chance of ForkWork operations hanging or sending
+SIGTERM to the wrong process if/when the kernel recycles process IDs. Do not
+use ForkWork for avionics, nuclear equipment, etc.<br>
+</body></html>

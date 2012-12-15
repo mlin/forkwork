@@ -1,0 +1,46 @@
+<html>
+<head>
+<link rel="stylesheet" href="style.css" type="text/css">
+<meta content="text/html; charset=iso-8859-1" http-equiv="Content-Type">
+<link rel="Start" href="index.html">
+<link title="Index of types" rel=Appendix href="index_types.html">
+<link title="Index of exceptions" rel=Appendix href="index_exceptions.html">
+<link title="Index of values" rel=Appendix href="index_values.html">
+<link title="Index of modules" rel=Appendix href="index_modules.html">
+<link title="ForkWork" rel="Chapter" href="ForkWork.html"><title>Index of exceptions</title>
+</head>
+<body>
+<div class="navbar">&nbsp;<a class="up" href="index.html" title="Index">Up</a>
+&nbsp;</div>
+<h1>Index of exceptions</h1>
+<table>
+<tr><td align="left"><br>B</td></tr>
+<tr><td><a href="ForkWork.html#EXCEPTIONBusy">Busy</a> [<a href="ForkWork.html">ForkWork</a>]</td>
+<td><div class="info">
+raised by <code class="code">fork</code> iff <code class="code">~nonblocking:true</code> and the manager already has
+    <code class="code">maxprocs</code> outstanding child processes
+</div>
+</td></tr>
+<tr><td align="left"><br>C</td></tr>
+<tr><td><a href="ForkWork.html#EXCEPTIONChildExn">ChildExn</a> [<a href="ForkWork.html">ForkWork</a>]</td>
+<td><div class="info">
+Due to limitations of OCaml's marshalling capabilities, communication of
+exceptions from a child process to the master process is tightly restricted:
+</div>
+</td></tr>
+<tr><td align="left"><br>I</td></tr>
+<tr><td><a href="ForkWork.html#EXCEPTIONIPC_Failure">IPC_Failure</a> [<a href="ForkWork.html">ForkWork</a>]</td>
+<td><div class="info">
+Any of the result retrieval functions might raise <code class="code">IPC_Failure</code> if an
+exception occurs while trying to receive a result from a child process.
+</div>
+</td></tr>
+<tr><td><a href="ForkWork.html#EXCEPTIONIdle">Idle</a> [<a href="ForkWork.html">ForkWork</a>]</td>
+<td><div class="info">
+raised by <code class="code">await_any_result</code> iff no results are available and there are no
+outstanding jobs
+</div>
+</td></tr>
+</table>
+</body>
+</html>
