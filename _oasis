@@ -1,0 +1,35 @@
+OASISFormat: 0.3
+Name:        ForkWork
+Version:     0.0.1
+Synopsis:    Fork child processes to perform work on multiple cores
+Authors:     Mike Lin
+License:     LGPL-2.1 with OCaml linking exception
+Plugins:     DevFiles (0.3), META (0.3)
+
+Library ForkWork
+  Path:            .
+  BuildTools:      ocamlbuild
+  BuildDepends:    unix
+  Modules:         ForkWork
+  InternalModules: Helpers
+
+Executable unit_tests
+  Path:           .
+  MainIs:         tests.ml
+  Install:        false
+  Build$:         flag(tests)
+  BuildTools:     ocamlbuild
+  BuildDepends:   unix,kaputt,bigarray
+  CompiledObject: best
+
+Test test
+  TestTools:   unit_tests
+  Command:     $unit_tests
+
+Document ForkWork
+  Title:                ForkWork API reference
+  Type:                 OCamlbuild (0.3)
+  InstallDir:           $docdir
+  BuildTools:           ocamlbuild,ocamldoc
+  XOCamlbuildPath:      .
+  XOCamlbuildLibraries: ForkWork

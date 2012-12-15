@@ -1,0 +1,12 @@
+# OASIS_START
+# DO NOT EDIT (digest: 982ac1e0882fbb8a93266a9329984bba)
+version = "0.0.1"
+description = "Fork child processes to perform work on multiple cores"
+requires = "unix"
+archive(byte) = "ForkWork.cma"
+archive(byte, plugin) = "ForkWork.cma"
+archive(native) = "ForkWork.cmxa"
+archive(native, plugin) = "ForkWork.cmxs"
+exists_if = "ForkWork.cma"
+# OASIS_STOP
+
