@@ -54,7 +54,7 @@ Printf.printf "%f\n" (estimate_pi 4 25_000_000)
 ;;
 ```
 
-ForkWork tries pretty hard to deal with exceptions in the forked child processes in a reasonable way, which is difficult because they [cannot be marshalled reliably](http://caml.inria.fr/mantis/view.php?id=1961). If an exception occurs during a parallel map operation, ForkWork will stop launching new child processes, wait for others to exit, and raise an exception to the caller.
+ForkWork tries pretty hard to deal with exceptions in the forked child processes in a reasonable way, which is difficult because they [cannot be marshalled reliably](http://caml.inria.fr/mantis/view.php?id=1961). There is a mechanism for child processes to cause ForkWork to abort the parallel computation and raise an exception to the caller with specifc information about the problem. The author was motivated to write ForkWork in part because comparable existing libraries did not handle this well.
 
 ## Lower-level example
 
