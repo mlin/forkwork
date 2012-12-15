@@ -50,11 +50,23 @@ let estimate_pi n k =
   4.0 *. (inside /. (inside +. outside))
 ;;
 
-Printf.printf "%f\n" (estimate_pi 4 25_000_000)
+let n = 4 and k = 25_000_000 in
+Printf.printf "Based on %.1e samples, \xCF\x80 \xE2\x89\x88 %f\n" (float (n*k)) (estimate_pi n k)
 ;;
 ```
 
-ForkWork tries pretty hard to deal with exceptions in the forked child processes in a reasonable way, which is difficult because they [cannot be marshalled reliably](http://caml.inria.fr/mantis/view.php?id=1961). There is a mechanism for child processes to cause ForkWork to abort the parallel computation and raise an exception to the caller with specifc information about the problem. The author was motivated to write ForkWork in part because comparable existing libraries did not handle this well.
+Run this like so:
+
+```
+$ ocamlfind ocamlopt -o estimate_pi -package ForkWork -linkpkg estimate_pi.ml && time ./estimate_pi
+Based on 1.0e+08 samples, π ≈ 3.141717
+
+real  0m6.843s
+user  0m26.428s
+sys   0m0.052s
+```
+
+One salient feature of ForkWork's high-level interface is that it tries pretty hard to deal with exceptions in the worker processes in a reasonable way, which is difficult because they [cannot be marshalled reliably](http://caml.inria.fr/mantis/view.php?id=1961). There is a mechanism for workers to cause ForkWork to both abort the parallel computation and also raise an OCaml exception to the caller with specifc information about the problem. The author was motivated to write ForkWork in part because comparable existing libraries did not handle this well, at the time.
 
 ## Lower-level example
 
