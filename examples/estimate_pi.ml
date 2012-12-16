@@ -1,7 +1,7 @@
 (*
 Estimate pi using a ForkWork-powered Monte Carlo simulation.
 
-$ ocamlfind ocamlopt -o estimate_pi -package ForkWork -linkpkg estimate_pi.ml && time ./estimate_pi
+$ ocamlfind ocamlopt -o estimate_pi -package forkwork -linkpkg estimate_pi.ml && time ./estimate_pi
 Based on 1.0e+08 samples, π ≈ 3.141717
 
 real  0m6.843s

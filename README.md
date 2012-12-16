@@ -62,7 +62,7 @@ Printf.printf "Based on %.1e samples, π ≈ %f\n" (float (n*k)) (estimate_pi n 
 Run this like so:
 
 ```
-$ ocamlfind ocamlopt -o estimate_pi -package ForkWork -linkpkg estimate_pi.ml && time ./estimate_pi
+$ ocamlfind ocamlopt -o estimate_pi -package forkwork -linkpkg estimate_pi.ml && time ./estimate_pi
 Based on 1.0e+08 samples, π ≈ 3.141717
 
 real  0m6.843s

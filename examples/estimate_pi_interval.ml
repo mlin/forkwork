@@ -5,7 +5,7 @@ threshold. This is a demonstration of using ForkWork's lower-level interface
 so that the master process can do other things while child processes are
 working, including launch more child processes.
 
-$ ocamlfind ocamlopt -o estimate_pi_interval -package ForkWork -linkpkg estimate_pi_interval.ml && time ./estimate_pi_interval
+$ ocamlfind ocamlopt -o estimate_pi_interval -package forkwork -linkpkg estimate_pi_interval.ml && time ./estimate_pi_interval
 Based on 1.8e+08 samples, π ∊ [3.141173,3.141663]
 
 real  0m16.962s

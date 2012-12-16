@@ -1,5 +1,5 @@
 (* OASIS_START *)
-(* DO NOT EDIT (digest: 35747e0ad7e89f296d8e4f03c8ab134d) *)
+(* DO NOT EDIT (digest: 93bc5a3d73dc0b829fc81d0c6b69789a) *)
 module OASISGettext = struct
 (* # 21 "/Users/mlin/.opam/system/build/oasis.0.3.0/src/oasis/OASISGettext.ml" *)
 
@@ -477,7 +477,7 @@ end
 open Ocamlbuild_plugin;;
 let package_default =
   {
-     MyOCamlbuildBase.lib_ocaml = [("ForkWork", [])];
+     MyOCamlbuildBase.lib_ocaml = [("forkwork", [])];
      lib_c = [];
      flags = [];
      includes = [];
