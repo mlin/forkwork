@@ -70,11 +70,11 @@ user  0m26.428s
 sys   0m0.052s
 ```
 
-One other salient feature of ForkWork's high-level interface is that it tries pretty hard to deal with exceptions in the worker processes in a reasonable way, which is difficult because they [cannot be marshalled reliably](http://caml.inria.fr/mantis/view.php?id=1961). There's a mechanism for workers to cause ForkWork to both abort the parallel computation and also raise an OCaml exception to the caller with specifc information about the problem. The author was motivated to write ForkWork in part because similar existing libraries did not handle this well, at the time.
+One other salient feature of ForkWork's high-level interface is that it tries to deal with worker exceptions in a reasonable way, which is difficult because exceptions [cannot be marshalled reliably](http://caml.inria.fr/mantis/view.php?id=1961). There's a mechanism for workers to cause ForkWork to both abort the parallel computation and also raise an OCaml exception to the caller with specifc information about the problem. The author was motivated to write ForkWork in part because similar existing libraries did not handle this well, at the time.
 
 ## Lower-level example
 
-There is also a lower-level interface providing much more control over the scheduling of child processes and retrieval of their results.For example, the master process can do other things while worker processes are running, including launch more worker processes, and the result of any individual child process can be retrieved as soon as it finishes.
+There is also a lower-level interface providing much more control over the scheduling of child processes and retrieval of their results. For example, the master process can do other things while worker processes are running, including launch more worker processes, and the result of any individual child process can be retrieved as soon as it finishes.
 
 A [fancier version of the estimate_pi example](https://github.com/mlin/forkwork/blob/master/examples/estimate_pi_interval.ml) uses the lower-level interface to run the Monte Carlo sampling until the estimate reaches a certain theoretical accuracy threshold, using the available processors continuously and terminating the outstanding workers when done.
 
