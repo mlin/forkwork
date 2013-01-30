@@ -304,5 +304,5 @@ let map_array ?maxprocs ?(fail_fast=false) f ar =
     Array.map (function Some x -> x | None -> assert false) results
 ;;
 
-let map_list ?maxprocs ?fail_fast f lst = Array.to_list (map_array ?fail_fast f (Array.of_list lst))
+let map_list ?maxprocs ?fail_fast f lst = Array.to_list (map_array ?maxprocs ?fail_fast f (Array.of_list lst))
 ;;
