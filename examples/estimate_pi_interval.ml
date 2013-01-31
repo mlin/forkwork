@@ -9,7 +9,7 @@ $ ocamlfind ocamlopt -o estimate_pi_interval -package forkwork -linkpkg estimate
 Based on 1.8e+08 samples, π ∊ [3.141173,3.141663]
 
 real  0m16.962s
-user  0m63.540s
+user  1m3.540s
 sys   0m0.168s
 *)
 

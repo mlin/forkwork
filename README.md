@@ -63,11 +63,11 @@ Run this like so:
 
 ```
 $ ocamlfind ocamlopt -o estimate_pi -package forkwork -linkpkg estimate_pi.ml && time ./estimate_pi
-Based on 1.0e+08 samples, π ≈ 3.141717
+Based on 7.5e+08 samples, π ≈ 3.141497
 
-real  0m6.843s
-user  0m26.428s
-sys   0m0.052s
+real  0m51.119s
+user  3m16.268s
+sys   0m1.084s
 ```
 
 One other salient feature of ForkWork's high-level interface is that it tries to deal with worker exceptions in a reasonable way, which is difficult because exceptions [cannot be marshalled reliably](http://caml.inria.fr/mantis/view.php?id=1961). There's a mechanism for workers to cause ForkWork to both abort the parallel computation and also raise an OCaml exception to the caller with specifc information about the problem. The author was motivated to write ForkWork in part because similar existing libraries did not handle this well, at the time.
