@@ -20,6 +20,8 @@ define the `OCAMLFIND_DESTDIR` environment variable if necessary and
 
 ```git clone https://github.com/mlin/forkwork.git && cd forkwork && make && make install```
 
+[![Build Status](https://travis-ci.org/mlin/forkwork.png)](https://travis-ci.org/mlin/forkwork)
+
 You can then use `ocamlfind` as usual to include the `forkwork` package when
 compiling your program (making sure `OCAMLPATH` includes `OCAMLFIND_DESTDIR` if
 you changed it).
@@ -81,3 +83,5 @@ A [fancier version of the estimate_pi example](https://github.com/mlin/forkwork/
 ## Running tests
 
 The tests use [kaputt](http://kaputt.x9c.fr). To run them, `./configure --enable-tests` and `make test`.
+
+They also run on Travis CI: [![Build Status](https://travis-ci.org/mlin/forkwork.png)](https://travis-ci.org/mlin/forkwork)
