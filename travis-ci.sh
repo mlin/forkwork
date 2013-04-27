@@ -13,7 +13,7 @@ pushd /tmp/opam-${OPAM_VERSION}
 ./configure
 make
 sudo make install
-opam init
+opam init -y
 eval `opam config env`
 popd
 
