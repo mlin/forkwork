@@ -24,7 +24,7 @@ let finally finalize f =
    subprocess results *)
 let temp_dir =
   try
-    if Sys.is_directory "/dev/shm" then Some "/dev/shm" else None
+    if Sys.is_directory "/run/shm" then Some "/run/shm" else None
   with Sys_error _ -> None
 ;;
 

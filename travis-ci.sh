@@ -1,3 +1,5 @@
+#!/bin/bash -ex
+
 # OPAM version to install
 export OPAM_VERSION=1.0.0
 # OPAM packages needed to build tests
