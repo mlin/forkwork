@@ -1,5 +1,5 @@
 # OPAM version to install
-export OPAM_VERSION=0.9.1
+export OPAM_VERSION=1.0.0
 # OPAM packages needed to build tests
 export OPAM_PACKAGES='ocamlfind kaputt'
 
@@ -14,7 +14,7 @@ pushd /tmp/opam-${OPAM_VERSION}
 make
 sudo make install
 opam init
-eval `opam config -env`
+eval `opam config env`
 popd
 
 # install packages from opam
