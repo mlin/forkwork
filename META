@@ -1,6 +1,6 @@
 # OASIS_START
-# DO NOT EDIT (digest: 469041f8f41796bc83e8183314dfde17)
-version = "0.3.1"
+# DO NOT EDIT (digest: 7c2c70ba9564ec78cc239fd10ddfc28b)
+version = "0.3.2"
 description = "Fork child processes to perform work on multiple cores"
 requires = "unix"
 archive(byte) = "forkwork.cma"
