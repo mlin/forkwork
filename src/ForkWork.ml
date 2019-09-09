@@ -36,7 +36,7 @@ exception ChildExn of string list
 outstanding child processes, close the corresponding temporary file
 descriptors. We'll stop short of actually killing the child processes, though.
 Library users should really be discouraged from putting us in this situation. *)
-let finalize_manager {pending} = Hashtbl.iter (fun _ (_,fd) -> Unix.close fd) pending
+let finalize_manager {pending; _} = Hashtbl.iter (fun _ (_,fd) -> Unix.close fd) pending
 
 let manager ?maxprocs () =
   let maxprocs = (match maxprocs with Some n -> n | None -> ncores ()) in
@@ -92,7 +92,8 @@ let receive_result pid result_fd =
       (* detect if the child process exited abnormally before writing its result
          (it's also possible it crashes while writing the result; in this case we
          have to rely on Marshal to detect the truncation) *)
-      let { Unix.st_size } = Unix.fstat result_fd in begin
+      let open Unix in
+      let { st_size; _ } = Unix.fstat result_fd in begin
         if st_size = 0 then failwith (sprintf "ForkWork subprocess %d (parent %d) exited abnormally" pid (Unix.getpid ()));
         ignore Unix.(lseek result_fd 0 SEEK_SET);
         Unix.in_channel_of_descr result_fd
@@ -219,9 +220,6 @@ let rec await_all mgr =
   end
 ;;
 
-exception ChildProcExn of string*(string option)
-;;
-
 let ignore_results mgr =
   let results = Hashtbl.fold (fun k r lst -> (k,r) :: lst) mgr.results [] in
   List.iter
@@ -281,14 +279,14 @@ let map_array ?maxprocs ?(fail_fast=false) f ar =
   let mgr = manager ?maxprocs () in
   let rec collect () = match any_result mgr with
     | None -> ()
-    | Some (job,`Exn info) -> begin
+    | Some (_,`Exn info) -> begin
         if fail_fast then
           kill_all ~wait:true mgr
         else
           await_all mgr;
         raise (ChildExn info)
       end
-    | Some (job,`OK (i,res)) -> begin
+    | Some (_,`OK (i,res)) -> begin
         assert (results.(i) = None);
         results.(i) <- Some res;
         collect ()

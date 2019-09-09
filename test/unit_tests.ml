@@ -68,10 +68,10 @@ Test.add_simple_test ~title:"use Sys.command in child processes" (fun () ->
   let intmgr = manager ~maxprocs:4 () in
   let floatmgr = manager ~maxprocs:4 () in
   let strmgr = manager ~maxprocs:4 () in begin
-    for i = 1 to 4 do
+    for _ = 1 to 4 do
       ignore (fork intmgr (fun () -> randsleep (); Random.int 1234567) ());
       ignore (fork floatmgr (fun () -> randsleep (); Random.float 1.0) ());
-      ignore (fork strmgr (fun () -> randsleep (); String.create (Random.int 1000)) ())
+      ignore (fork strmgr (fun () -> randsleep (); Bytes.create (Random.int 1000)) ())
     done;
     await_all intmgr; ignore_results intmgr;
     await_all floatmgr; ignore_results floatmgr;
@@ -82,7 +82,7 @@ Test.add_simple_test ~title:"use Sys.command in child processes" (fun () ->
 Test.add_simple_test ~title:"use Sys.command in master process" (fun () ->
   let randsleep () = ignore (Sys.command (sprintf "sleep %.2f" (Random.float 0.1))) in
   let mgr = manager ~maxprocs:10 () in begin
-    for i = 1 to 50 do
+    for _ = 1 to 50 do
       (try ignore (fork ~nonblocking:true mgr randsleep ()) with Busy -> ());
       randsleep ()
     done;
@@ -106,10 +106,10 @@ Test.add_assert_test ~title:"kill a child process"
   Sys.remove
 ;;
 
-let abort_map_test fail_fast fn =
+let abort_map_test _ fn =
   let fd = Unix.(openfile fn [O_RDWR] 0o600) in
-  Assert.equal 128 (Unix.write fd (String.make 128 (Char.chr 0)) 0 128);
-  let shm = Bigarray.Array1.map_file fd ~pos:0L Bigarray.nativeint Bigarray.c_layout true (-1) in
+  Assert.equal 128 (Unix.write fd (Bytes.make 128 (Char.chr 0)) 0 128);
+  let shm = Bigarray.array1_of_genarray (Mmap.V1.map_file fd ~pos:0L Bigarray.nativeint Bigarray.c_layout true [|-1|]) in
   let f i =
     if i = 10 then failwith "";
     Unix.sleep 1;
@@ -156,7 +156,7 @@ Test.add_simple_test ~title:"speed up estimation of pi" (fun () ->
     Random.init n;
     let inside = ref 0 in
     let outside = ref 0 in begin
-      for i = 1 to n do
+      for _ = 1 to n do
         let x = Random.float 1.0 in
         let y = Random.float 1.0 in
         incr (if x *. x +. y *. y < 1.0 then inside else outside)
@@ -164,7 +164,7 @@ Test.add_simple_test ~title:"speed up estimation of pi" (fun () ->
       (!inside,!outside)
     end
   in
-  let inputs = Array.init 32 (fun i -> int_of_float (1e6 *. (Random.float 10.0))) in
+  let inputs = Array.init 32 (fun _ -> int_of_float (1e6 *. (Random.float 10.0))) in
   let par_results, par_time = timed (map_list f) (Array.to_list inputs) in
   let _, ser_time = timed (Array.map f) inputs in
   let speedup = ser_time /. par_time in

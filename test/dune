@@ -1,0 +1,4 @@
+(test
+  (name unit_tests)
+  (modules unit_tests)
+  (libraries forkwork unix kaputt bigarray mmap))

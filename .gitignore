@@ -12,3 +12,5 @@ _build/
 setup.data
 setup.log
 *.docdir
+*.merlin
+*.install
