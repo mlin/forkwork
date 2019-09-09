@@ -1,0 +1,9 @@
+(executable
+  (name estimate_pi_interval)
+  (modules estimate_pi_interval)
+  (libraries forkwork))
+
+(executable
+  (name estimate_pi)
+  (modules estimate_pi)
+  (libraries forkwork))

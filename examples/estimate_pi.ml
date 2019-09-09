@@ -15,7 +15,7 @@ let worker k =
   Random.self_init ();
   let inside = ref 0 in
   let outside = ref 0 in begin
-    for i = 1 to k do
+    for _ = 1 to k do
       let x = Random.float 1.0 in
       let y = Random.float 1.0 in
       incr (if x *. x +. y *. y <= 1.0 then inside else outside)

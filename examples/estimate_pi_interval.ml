@@ -19,7 +19,7 @@ let worker k =
   Random.self_init ();
   let inside = ref 0 in
   let outside = ref 0 in begin
-    for i = 1 to k do
+    for _ = 1 to k do
       let x = Random.float 1.0 in
       let y = Random.float 1.0 in
       incr (if x *. x +. y *. y <= 1.0 then inside else outside)
@@ -69,7 +69,7 @@ let rec iter mgr acc k inside outside =
    processes, and enter the main loop. *)
 let acc = 5e-4 and k = 10_000_000 in
 let mgr = ForkWork.manager () in begin
-  for i = 1 to 4 do
+  for _ = 1 to 4 do
     ignore (ForkWork.fork mgr worker k)
   done;
   iter mgr acc k 0 0
